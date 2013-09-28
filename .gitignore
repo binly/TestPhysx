@@ -4,3 +4,12 @@ obj/
 *.bin
 *.bmp
 *.txt
+Debug/
+data/
+*.tet
+*.vcxproj
+*.gif
+*.aps
+*.rc
+*.user
+*.filters
