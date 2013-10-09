@@ -86,6 +86,7 @@ int World::gInvisible;
 // Focus actor
 NxActor* World::gSelectedActor;
 NxSoftBody* World::gSelectedSoftBody;
+NxCloth* World::gSelectedCloth;
 
 
 World::World()
@@ -396,6 +397,7 @@ void World::MyKeyboardCallback(unsigned char key, int x, int y)
 	switch (key)
 	{
 		case 'r':	{ MySelectNextActor(); break; }
+		case 't':	{ MySelectNextCloth(); break; }
 		case 'e':
 			{
 				if(gSelectedActor)
@@ -413,6 +415,28 @@ void World::MyKeyboardCallback(unsigned char key, int x, int y)
 			{
 				if(gSelectedActor)
 					gSelectedActor->setAngularVelocity(NxVec3(0, 1000.0f, 0));
+				break;
+			}
+		case '+':
+			{
+				if(gSelectedCloth)
+				{
+					printf("current pressure is %f\n", gSelectedCloth->getPressure());
+					gSelectedCloth->setPressure(gSelectedCloth->getPressure()+0.1);
+					printf("after increasing pressure is %f\n", gSelectedCloth->getPressure());
+
+				}
+				break;
+			}
+		case '-':
+			{
+				if(gSelectedCloth)
+				{
+					printf("current pressure is %f\n", gSelectedCloth->getPressure());
+					gSelectedCloth->setPressure(gSelectedCloth->getPressure()-0.1);
+					printf("after decreasing pressure is %f\n", gSelectedCloth->getPressure());
+				}
+				break;
 			}
 		default:	{ break; }
 	}
@@ -836,6 +860,18 @@ void World::MySelectNextActor()
            break;
        }
    }
+}
+
+void World::MySelectNextCloth()
+{
+	for (NxU32 i = 0; i < gCloths.size(); i++)
+	{
+		if (gCloths[i]->getNxCloth() == gSelectedCloth)
+		{
+			gSelectedCloth = gCloths[(i+1) % gCloths.size()]->getNxCloth();
+			return;
+		}
+	}
 }
 
 void World::MyProcessForceKeys()

@@ -39,6 +39,7 @@ public:
 	static void MyProcessForceKeys();
 	static void MyProcessInputs();
 	static void MySelectNextActor();
+	static void MySelectNextCloth();
 	static bool MyIsSelectable(NxActor* actor);
 
 	static void MyRenderCallback();
@@ -191,6 +192,7 @@ public:
 
 	// SoftBody globals
 	static NxSoftBody* gSelectedSoftBody;
+	static NxCloth* gSelectedCloth;
 
 
 

@@ -146,7 +146,7 @@ void World::SetupPressureScene()
 	
 	clothDesc.thickness = 0.01f;
 	clothDesc.pressure = 1.0f;
-	clothDesc.stretchingStiffness = 0.5f;
+	clothDesc.stretchingStiffness = 1.0f;
 	clothDesc.bendingStiffness = 0.5f;
 	clothDesc.friction = 0.1;
 	clothDesc.globalPose.M.rotY(-NxPi/6);
@@ -164,7 +164,7 @@ void World::SetupPressureScene()
 	clothDesc2.globalPose.t = NxVec3(-6.8,0.1,0);
 	clothDesc2.thickness = 0.01f;
 	clothDesc2.pressure = 1.0f;
-	clothDesc2.stretchingStiffness = 0.5f;
+	clothDesc2.stretchingStiffness = 1.0f;
 	clothDesc2.bendingStiffness = 0.5f;
 	clothDesc2.friction = 0.1;
 	clothDesc2.globalPose.M.rotY(-NxPi/6);
@@ -184,8 +184,33 @@ void World::SetupPressureScene()
 	printf("cloth\nmaxPos %f %f %f\nminPos %f %f %f\n\n",maxPos.x, maxPos.y, maxPos.z, minPos.x, minPos.y, minPos.z);
 	printf("cloth2\nmaxPos %f %f %f\nminPos %f %f %f\n",maxPos2.x, maxPos2.y, maxPos2.z, minPos2.x, minPos2.y, minPos2.z);
 
-	NxReal adhereX = 0;
-	NxActor* adhere = MyCreateCapsule(NxVec3(-3.5,8,-4), 1, 1, 1);
+	NxVec3 pos1(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2);
+	NxVec3 pos2(minPos.x, minPos.y, (maxPos.z + minPos.z)/2);
+	NxVec3 pos3(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2);
+
+	NxVec3 pos4(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
+	NxVec3 pos5(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
+	NxVec3 pos6(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
+
+	NxVec3 pos7(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+	NxVec3 pos8(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+	NxVec3 pos9 (minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+
+	NxReal adhereX1 = (minPos.x - maxPos2.x)/2;
+	NxReal adhereX2 = (minPos.x - maxPos2.x)/2;
+
+	NxActor* adhere1 = MyCreateCapsule(pos1, adhereX1, adhereX1, 1);
+	NxActor* adhere2 = MyCreateCapsule(pos2, adhereX1, adhereX1, 1);
+	NxActor* adhere3 = MyCreateCapsule(pos3, adhereX2, adhereX1, 1);
+
+	NxActor* adhere4 = MyCreateCapsule(pos4, adhereX2, adhereX1, 1);
+	NxActor* adhere5 = MyCreateCapsule(pos5, adhereX2, adhereX1, 1);
+	NxActor* adhere6 = MyCreateCapsule(pos6, adhereX2, adhereX1, 1);
+
+	NxActor* adhere7 = MyCreateCapsule(pos7, adhereX2, adhereX1, 1);
+	NxActor* adhere8 = MyCreateCapsule(pos8, adhereX2, adhereX1, 1);
+	NxActor* adhere9 = MyCreateCapsule(pos9, adhereX2, adhereX1, 1);
+
 
 	NxQuat quat(90.0f, NxVec3(0,0,1));
 	NxMat33 m;
@@ -193,14 +218,38 @@ void World::SetupPressureScene()
 	m.fromQuat(quat);
 	NxMat34 m34;
 	m34.M = m;
-	m34.t = adhere->getGlobalPosition();
-	adhere->setGlobalPose(m34);
+	m34.t = adhere1->getGlobalPosition();
+	adhere1->setGlobalPose(m34);
+	m34.t = adhere2->getGlobalPosition();
+	adhere2->setGlobalPose(m34);
+	m34.t = adhere3->getGlobalPosition();
+	adhere3->setGlobalPose(m34);
+	m34.t = adhere4->getGlobalPosition();
+	adhere4->setGlobalPose(m34);
+	m34.t = adhere5->getGlobalPosition();
+	adhere5->setGlobalPose(m34);
+	m34.t = adhere6->getGlobalPosition();
+	adhere6->setGlobalPose(m34);
+	m34.t = adhere7->getGlobalPosition();
+	adhere7->setGlobalPose(m34);
+	m34.t = adhere8->getGlobalPosition();
+	adhere8->setGlobalPose(m34);
+	m34.t = adhere9->getGlobalPosition();
+	adhere9->setGlobalPose(m34);
 //--------------------------------------------------
-	gSelectedActor = adhere;
+	gSelectedCloth = cloth;
 
-	cloth->putToSleep();
+	/*cloth->putToSleep();
 	cloth2->putToSleep();
-	adhere->putToSleep();
+	adhere1->putToSleep();
+	adhere2->putToSleep();
+	adhere3->putToSleep();
+	adhere4->putToSleep();
+	adhere5->putToSleep();
+	adhere6->putToSleep();
+	adhere7->putToSleep();
+	adhere8->putToSleep();
+	adhere9->putToSleep();*/
 	
 	cloth->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
 	cloth2->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
