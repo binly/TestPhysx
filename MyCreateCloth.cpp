@@ -106,7 +106,7 @@ void GetPos(NxVec3 &maxPos, NxVec3 &minPos, NxCloth *cloth)
 	cloth->getPositions(vetex);
 	for (int i = 0; i < 2000; i++)
 	{
-		if (vetex[i].x == 0 && vetex[i].y == 0 || vetex[i].z == 0)
+		if (vetex[i].x == 0 && vetex[i].y == 0 || vetex[i].z == 0)              
 		{
 			printf("i = %d\n", i); 
 			break;
@@ -120,10 +120,8 @@ void GetPos(NxVec3 &maxPos, NxVec3 &minPos, NxCloth *cloth)
 			if (vetex[i].x < minX)	minX = vetex[i].x;
 			if (vetex[i].y < minY)	minY = vetex[i].y;
 			if (vetex[i].z < minZ)	minZ = vetex[i].z;
-
-			 
 			printf("vetex %f %f %f\n", vetex[i].x, vetex[i].y, vetex[i].z);
-			outFile << vetex[i].x << "\t" << vetex[i].y << "\t" << vetex[i].z << endl;
+			//outFile << vetex[i].x << "\t" << vetex[i].y << "\t" << vetex[i].z << endl;
 		}
 	}
 	minPos.setx(minX);
@@ -159,7 +157,6 @@ void World::SetupPressureScene()
 	NxCloth* cloth = objCloth->getNxCloth();
 
 	
-
 	NxClothDesc clothDesc2;
 	clothDesc2.globalPose.t = NxVec3(-6.8,0.1,0);
 	clothDesc2.thickness = 0.01f;
@@ -175,14 +172,35 @@ void World::SetupPressureScene()
 
 	MyCloth* objCloth2 = new MyCloth(gScene, clothDesc2, "data/newmesh.obj", 0.3);
 	NxCloth* cloth2 = objCloth2->getNxCloth();
+
+
+	// cloth3
+	NxClothDesc clothDesc3;
+	clothDesc3.globalPose.t = NxVec3(-4.65,0.1,3.6);
+	clothDesc3.thickness = 0.01f;
+	clothDesc3.pressure = 1.0f;
+	clothDesc3.stretchingStiffness = 1.0f;
+	clothDesc3.bendingStiffness = 0.5f;
+	clothDesc3.friction = 0.1;
+	clothDesc3.globalPose.M.rotY(-NxPi/6);
+
+	clothDesc3.density = 0.05f;
+	clothDesc3.flags |= NX_CLF_PRESSURE | NX_CLF_DAMPING;
+	clothDesc3.flags |= NX_CLF_BENDING | NX_CLF_COLLISION_TWOWAY | NX_CLF_VISUALIZATION;
+
+	MyCloth* objCloth3 = new MyCloth(gScene, clothDesc3, "data/newmesh.obj", 0.3);
+	NxCloth* cloth3 = objCloth3->getNxCloth();
 	
 //-------------------------test---------------------
 	NxVec3 maxPos, minPos;
 	NxVec3 maxPos2, minPos2;
+	NxVec3 maxPos3, minPos3;
 	GetPos(maxPos, minPos, cloth);
 	GetPos(maxPos2, minPos2, cloth2);
+	GetPos(maxPos3, minPos3, cloth3);
 	printf("cloth\nmaxPos %f %f %f\nminPos %f %f %f\n\n",maxPos.x, maxPos.y, maxPos.z, minPos.x, minPos.y, minPos.z);
 	printf("cloth2\nmaxPos %f %f %f\nminPos %f %f %f\n",maxPos2.x, maxPos2.y, maxPos2.z, minPos2.x, minPos2.y, minPos2.z);
+	printf("cloth3\nmaxPos %f %f %f\nminPos %f %f %f\n",maxPos3.x, maxPos3.y, maxPos3.z, minPos3.x, minPos3.y, minPos3.z);
 
 	NxVec3 pos1(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2);
 	NxVec3 pos2(minPos.x, minPos.y, (maxPos.z + minPos.z)/2);
@@ -192,9 +210,10 @@ void World::SetupPressureScene()
 	NxVec3 pos5(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
 	NxVec3 pos6(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
 
-	NxVec3 pos7(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+	NxVec3 pos7(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4); 
 	NxVec3 pos8(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
 	NxVec3 pos9 (minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+	printf("pos9.z is %f\n", (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
 
 	NxReal adhereX1 = (minPos.x - maxPos2.x)/2;
 	NxReal adhereX2 = (minPos.x - maxPos2.x)/2;
@@ -237,7 +256,7 @@ void World::SetupPressureScene()
 	m34.t = adhere9->getGlobalPosition();
 	adhere9->setGlobalPose(m34);
 //--------------------------------------------------
-	gSelectedCloth = cloth;
+	gSelectedCloth = cloth3;
 
 	/*cloth->putToSleep();
 	cloth2->putToSleep();
@@ -253,9 +272,11 @@ void World::SetupPressureScene()
 	
 	cloth->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
 	cloth2->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
+	cloth3->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
 
 	gCloths.push_back(objCloth);
 	gCloths.push_back(objCloth2);
+	gCloths.push_back(objCloth3);
 }
 
 void World::SetupMetalScene()

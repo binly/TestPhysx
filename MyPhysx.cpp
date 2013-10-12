@@ -869,6 +869,7 @@ void World::MySelectNextCloth()
 		if (gCloths[i]->getNxCloth() == gSelectedCloth)
 		{
 			gSelectedCloth = gCloths[(i+1) % gCloths.size()]->getNxCloth();
+			printf("select %d,  %d total\n", (i+1) % gCloths.size(), gCloths.size());
 			return;
 		}
 	}
