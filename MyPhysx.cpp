@@ -286,7 +286,8 @@ void World::MyInitNx()
 	//SetupSoftWheelCarScene();
 	//SetupCurtainScene();
 	//SetupFlagScene();
-	SetupPressureScene();
+	//SetupPressureScene();
+	CreateSoftComb();
 	//SetupMetalScene();
 
 	//fluid = CreateFluid(NxVec3(0,3,0), 15, 0.1, gScene);
