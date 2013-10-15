@@ -111,6 +111,7 @@ public:
 	static void SetupCurtainScene();
 	static void SetupFlagScene();
 	static void SetupPressureScene();
+	static void CreateSoftComb();
 	static void SetupMetalScene();
 	static void CreateMetalCloth(const NxVec3 &position, int mode, NxClothDesc &clothDesc, char *meshName);
 
