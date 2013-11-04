@@ -57,6 +57,7 @@ NxActor* World::MyCreateCapsule(const NxVec3& pos, NxReal height, NxReal radius,
 	actorDesc.globalPose.t = pos;
 	assert(actorDesc.isValid());
 	NxActor* pActor = gScene->createActor(actorDesc);
+	pActor->setLinearDamping(10);
 	assert(pActor);
 
 	return pActor;
@@ -157,13 +158,13 @@ void World::MyCreateStack()
 			for (k=-stackDim.z; k<stackDim.z; k++)
 			{
 				boxPos = NxVec3(i * boxDim.x * 2, j * boxDim.y * 2, k * boxDim.z * 2) + offset;
-				stack[count++] = CreateBox(boxPos, boxDim, 10.0f);
+				stack[count++] = CreateBox(boxPos, boxDim, 0,10.0f);
 			}
 		}	
 	}
 }
 
-NxActor* World::CreateBox(const NxVec3& pos, const NxVec3& boxDim, const NxReal density)
+NxActor* World::CreateBox(const NxVec3& pos, const NxVec3& boxDim, const NxReal angleY, const NxReal density)
 {
 	// Add a single-shape actor to the scene
 	NxActorDesc actorDesc;
@@ -173,6 +174,7 @@ NxActor* World::CreateBox(const NxVec3& pos, const NxVec3& boxDim, const NxReal 
 	NxBoxShapeDesc boxDesc;
 	boxDesc.dimensions.set(boxDim.x,boxDim.y,boxDim.z);
 	boxDesc.localPose.t = NxVec3(0,boxDim.y,0);
+	
 	actorDesc.shapes.pushBack(&boxDesc);
 
 	if (density)
@@ -185,11 +187,11 @@ NxActor* World::CreateBox(const NxVec3& pos, const NxVec3& boxDim, const NxReal 
 		actorDesc.body = NULL;
 	}
 	actorDesc.globalPose.t = pos;
+	actorDesc.globalPose.M.rotY(angleY);
 
 	NxActor* pActor=gScene->createActor(actorDesc);
 
 	return pActor;
-	return NULL;
 }
 
 NxActor* World::CreateSphere(const NxVec3& pos, const NxReal radius, const NxReal density)
@@ -200,8 +202,10 @@ NxActor* World::CreateSphere(const NxVec3& pos, const NxReal radius, const NxRea
 	// Create a sphere
 	NxSphereShapeDesc sphereDesc;
 	sphereDesc.radius = radius;
+
 	sphereDesc.localPose.t = NxVec3(0, radius, 0);;
 	sphereDesc.skinWidth = 0.05;
+
 	assert(sphereDesc.isValid());
 	actorDesc.shapes.pushBack(&sphereDesc);
 	actorDesc.globalPose.t = pos;
@@ -219,6 +223,7 @@ NxActor* World::CreateSphere(const NxVec3& pos, const NxReal radius, const NxRea
 	assert(actorDesc.isValid());
 
 	NxActor* pActor = gScene->createActor(actorDesc);
+	pActor->setLinearDamping(10);
 	assert(pActor);
 
 	return pActor;

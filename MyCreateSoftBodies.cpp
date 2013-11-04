@@ -126,10 +126,10 @@ void World::SetupBunnyScene()
 	}
 
 	NxMat33 rot;
-	NxActor *plate0 = CreateBox(NxVec3(-2.5,10,0), NxVec3(20.0f, 1.0f, 10.0f), 0.0f);
+	NxActor *plate0 = CreateBox(NxVec3(-2.5,10,0), NxVec3(20.0f, 1.0f, 10.0f), 0,0.0f);
 	rot.rotZ(1.5f);
 	plate0->setGlobalOrientation(rot);
-	NxActor *plate1 = CreateBox(NxVec3(2.5,10,0), NxVec3(20.0f, 1.0f, 10.0f), 0.0f);
+	NxActor *plate1 = CreateBox(NxVec3(2.5,10,0), NxVec3(20.0f, 1.0f, 10.0f), 0,0.0f);
 	rot.rotZ(1.5f);
 	plate1->setGlobalOrientation(rot);
 
@@ -210,7 +210,7 @@ void World::SetupSoftWheelCarScene()
 		softBody->getNxSoftBody()->attachToCollidingShapes(NX_SOFTBODY_ATTACHMENT_TWOWAY);		// bind soft wheel with capsule colliding with it
 		gSoftBodies.push_back(softBody);
 
-		NxActor *box = CreateBox(NxVec3(0,carHeight,0), NxVec3(4.6f, 0.5f, 1.0f), 1.0f);
+		NxActor *box = CreateBox(NxVec3(0,carHeight,0), NxVec3(4.6f, 0.5f, 1.0f), 0,1.0f);
 		CreateRevoluteJoint(box, caps1, NxVec3(-4,carHeight,-3.5f), NxVec3(0,0,1), false);
 		CreateRevoluteJoint(box, caps2, NxVec3( 4,carHeight,-3.5f), NxVec3(0,0,1), false);
 

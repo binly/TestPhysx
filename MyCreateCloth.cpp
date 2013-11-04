@@ -3,6 +3,8 @@
 
 #include <fstream>
 
+#define RAD3 1.7320508076f
+
 using namespace std;
 
 NxArray<NxActor*, NxAllocatorDefault> World::gMetalCores;
@@ -10,10 +12,10 @@ NxArray<NxActor*, NxAllocatorDefault> World::gMetalCores;
 void World::SetupCurtainScene()
 {
 	NxActor* sphere1 = CreateSphere(NxVec3(-1,0,-0.5), 1, 10);
-	NxActor* box1 = CreateBox(NxVec3(1,0,-1), NxVec3(1,1,1), 10);
+	NxActor* box1 = CreateBox(NxVec3(1,0,-1), NxVec3(1,1,1), 0,10);
 
 	// Create the box that the cloth will attach to
-	NxActor* box2 = CreateBox(NxVec3(0,6.5,0), NxVec3(5,0.5,0.5), 10);
+	NxActor* box2 = CreateBox(NxVec3(0,6.5,0), NxVec3(5,0.5,0.5), 0,10);
 	box2->setLinearDamping(0.5);
 
 	// Limit the movement to the box by a joint
@@ -108,7 +110,7 @@ void GetPos(NxVec3 &maxPos, NxVec3 &minPos, NxCloth *cloth)
 	{
 		if (vetex[i].x == 0 && vetex[i].y == 0 || vetex[i].z == 0)              
 		{
-			printf("i = %d\n", i); 
+			//printf("i = %d\n", i); 
 			break;
 		}
 		else
@@ -120,7 +122,7 @@ void GetPos(NxVec3 &maxPos, NxVec3 &minPos, NxCloth *cloth)
 			if (vetex[i].x < minX)	minX = vetex[i].x;
 			if (vetex[i].y < minY)	minY = vetex[i].y;
 			if (vetex[i].z < minZ)	minZ = vetex[i].z;
-			printf("vetex %f %f %f\n", vetex[i].x, vetex[i].y, vetex[i].z);
+			//printf("vetex %f %f %f\n", vetex[i].x, vetex[i].y, vetex[i].z);
 			//outFile << vetex[i].x << "\t" << vetex[i].y << "\t" << vetex[i].z << endl;
 		}
 	}
@@ -134,6 +136,245 @@ void GetPos(NxVec3 &maxPos, NxVec3 &minPos, NxCloth *cloth)
 
 	outFile << maxX << endl;
 	outFile.close();
+}
+
+
+void World::CreateSoftComb()
+{
+	NxReal combLength = 4.1709f, combWidth = 4.8161f, combHeight = 5.9620f;
+	NxReal x_offset, z_offset = 0.0f;
+
+	for (int i = 0; i < 3; i++)
+	{
+		NxClothDesc clothDesc;
+		clothDesc.globalPose.t = NxVec3(-2.5 - i*combLength - 0.05, 0.1, 0);
+		
+		clothDesc.thickness = 0.01f;
+		clothDesc.pressure = 1.0f;
+		clothDesc.stretchingStiffness = 1.0f;
+		clothDesc.bendingStiffness = 1.0f;
+		clothDesc.friction = 0.1;
+		clothDesc.collisionResponseCoefficient = 0.1f;
+		clothDesc.globalPose.M.rotY(-NxPi/6);
+
+		clothDesc.density = 0.05f;
+		clothDesc.flags |= NX_CLF_PRESSURE | NX_CLF_DAMPING;
+		clothDesc.flags |= NX_CLF_BENDING | NX_CLF_COLLISION_TWOWAY | NX_CLF_VISUALIZATION | NX_CLF_TRIANGLE_COLLISION;
+
+		MyCloth* objCloth = new MyCloth(gScene, clothDesc, "data/newmesh.obj", 0.3);
+		NxCloth* cloth = objCloth->getNxCloth();
+
+		NxVec3 maxPos, minPos;
+		GetPos(maxPos, minPos, cloth);
+		x_offset = (maxPos.x - minPos.x) / 4;
+		z_offset = (maxPos.z - minPos.z) / 4;
+		printf("x_offset is %f\n", x_offset);
+
+		NxVec3 pos1(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2);	//mid-up   (fb ud)
+		NxVec3 pos2(minPos.x, minPos.y, (maxPos.z + minPos.z)/2);	//mid-bottom
+		NxVec3 pos3(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2);// mid-mid
+
+		NxVec3 pos4(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4); //back-up
+		NxVec3 pos5(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4); //back-bottom
+		NxVec3 pos6(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4); //back-mid
+
+		NxVec3 pos7(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4); //forward-up
+		NxVec3 pos8(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4); //forward-bottom
+		NxVec3 pos9(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);	//forward-mid
+
+		// new pos
+		NxVec3 pos11(minPos.x + x_offset, maxPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4 + z_offset/2);
+		NxVec3 pos22(minPos.x + x_offset, minPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4 + z_offset/2);
+		NxVec3 pos33(minPos.x + x_offset, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4 + z_offset/2);
+
+		NxReal adhereX1 = 0.05f, adhereX2 = 0.05f, radius = 0.05f;
+		NxActor* adhere1 = MyCreateCapsule(pos1, adhereX1, adhereX1, 1);
+		NxActor* adhere2 = MyCreateCapsule(pos2, adhereX1, adhereX1, 1);
+		NxActor* adhere3 = MyCreateCapsule(pos3, adhereX2, adhereX1, 1);
+
+		NxActor* adhere4 = MyCreateCapsule(pos4, adhereX2, adhereX1, 1);
+		NxActor* adhere5 = MyCreateCapsule(pos5, adhereX2, adhereX1, 1);
+		NxActor* adhere6 = MyCreateCapsule(pos6, adhereX2, adhereX1, 1);
+
+		NxActor* adhere7 = MyCreateCapsule(pos7, adhereX2, adhereX1, 1);
+		NxActor* adhere8 = MyCreateCapsule(pos8, adhereX2, adhereX1, 1);
+		NxActor* adhere9 = MyCreateCapsule(pos9, adhereX2, adhereX1, 1);
+
+		NxActor* adhere10 = CreateSphere(pos11, radius, 1);
+		NxActor* adhere11 = CreateSphere(pos22, radius, 1);
+		NxActor* adhere12 = CreateSphere(pos33, radius, 1);
+
+		adhere10->putToSleep();
+		adhere11->putToSleep();
+		adhere12->putToSleep();
+
+		NxQuat quat(90.0f, NxVec3(0,0,1));
+		NxMat33 m;
+		m.id();
+		m.fromQuat(quat);
+		NxMat34 m34;
+		m34.M = m;
+		m34.t = adhere1->getGlobalPosition();
+		adhere1->setGlobalPose(m34);
+		m34.t = adhere2->getGlobalPosition();
+		adhere2->setGlobalPose(m34);
+		m34.t = adhere3->getGlobalPosition();
+		adhere3->setGlobalPose(m34);
+		m34.t = adhere4->getGlobalPosition();
+		adhere4->setGlobalPose(m34);
+		m34.t = adhere5->getGlobalPosition();
+		adhere5->setGlobalPose(m34);
+		m34.t = adhere6->getGlobalPosition();
+		adhere6->setGlobalPose(m34);
+		m34.t = adhere7->getGlobalPosition();
+		adhere7->setGlobalPose(m34);
+		m34.t = adhere8->getGlobalPosition();
+		adhere8->setGlobalPose(m34);
+		m34.t = adhere9->getGlobalPosition();
+		adhere9->setGlobalPose(m34);
+
+		cloth->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
+		gSelectedCloth = cloth;
+		cloth->putToSleep();
+		gCloths.push_back(objCloth);
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		NxClothDesc clothDesc;
+		clothDesc.globalPose.t = NxVec3(-2.5 - i*combLength - combLength/2 - 0.05, 0.1, 3*combWidth/4);
+	
+		clothDesc.thickness = 0.01f;
+		clothDesc.pressure = 1.0f;
+		clothDesc.stretchingStiffness = 1.0f;
+		clothDesc.bendingStiffness = 1.0f;
+		clothDesc.friction = 0.1;
+		clothDesc.globalPose.M.rotY(-NxPi/6);
+		clothDesc.collisionResponseCoefficient = 0.1f;
+
+		clothDesc.density = 0.05f;
+		clothDesc.flags |= NX_CLF_PRESSURE | NX_CLF_DAMPING;
+		clothDesc.flags |= NX_CLF_BENDING | NX_CLF_COLLISION_TWOWAY | NX_CLF_VISUALIZATION | NX_CLF_TRIANGLE_COLLISION;
+
+		MyCloth* objCloth = new MyCloth(gScene, clothDesc, "data/newmesh.obj", 0.3);
+		NxCloth* cloth = objCloth->getNxCloth();
+
+		NxVec3 maxPos, minPos;
+		GetPos(maxPos, minPos, cloth);
+
+		NxVec3 pos1(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2);
+		NxVec3 pos2(minPos.x, minPos.y, (maxPos.z + minPos.z)/2);
+		NxVec3 pos3(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2);
+
+		NxVec3 pos4(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
+		NxVec3 pos5(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
+		NxVec3 pos6(minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4);
+
+		NxVec3 pos7(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+		NxVec3 pos8(minPos.x, minPos.y, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+		NxVec3 pos9 (minPos.x, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 + (maxPos.z-minPos.z)/4);
+
+		// new pos
+		NxVec3 pos11(minPos.x + x_offset, maxPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4 - z_offset/2);
+		NxVec3 pos22(minPos.x + x_offset, minPos.y, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4 - z_offset/2);
+		NxVec3 pos33(minPos.x + x_offset, (maxPos.y+minPos.y)/2, (maxPos.z + minPos.z)/2 - (maxPos.z-minPos.z)/4 - z_offset/2);
+
+		NxReal adhereX1 = 0.05f, adhereX2 = 0.05f, radius = 0.05f;
+		NxActor* adhere1 = MyCreateCapsule(pos1, adhereX1, adhereX1, 1);
+		NxActor* adhere2 = MyCreateCapsule(pos2, adhereX1, adhereX1, 1);
+		NxActor* adhere3 = MyCreateCapsule(pos3, adhereX2, adhereX1, 1);
+
+		NxActor* adhere4 = MyCreateCapsule(pos4, adhereX2, adhereX1, 1);
+		NxActor* adhere5 = MyCreateCapsule(pos5, adhereX2, adhereX1, 1);
+		NxActor* adhere6 = MyCreateCapsule(pos6, adhereX2, adhereX1, 1);
+
+		NxActor* adhere7 = MyCreateCapsule(pos7, adhereX2, adhereX1, 1);
+		NxActor* adhere8 = MyCreateCapsule(pos8, adhereX2, adhereX1, 1);
+		NxActor* adhere9 = MyCreateCapsule(pos9, adhereX2, adhereX1, 1);
+
+		NxActor* adhere10 = CreateSphere(pos11, radius, 1);
+		NxActor* adhere11 = CreateSphere(pos22, radius, 1);
+		NxActor* adhere12 = CreateSphere(pos33, radius, 1);
+
+		NxQuat quat(90.0f, NxVec3(0,0,1));
+		NxMat33 m;
+		m.id();
+		m.fromQuat(quat);
+		NxMat34 m34;
+		m34.M = m;
+		m34.t = adhere1->getGlobalPosition();
+		adhere1->setGlobalPose(m34);
+		m34.t = adhere2->getGlobalPosition();
+		adhere2->setGlobalPose(m34);
+		m34.t = adhere3->getGlobalPosition();
+		adhere3->setGlobalPose(m34);
+		m34.t = adhere4->getGlobalPosition();
+		adhere4->setGlobalPose(m34);
+		m34.t = adhere5->getGlobalPosition();
+		adhere5->setGlobalPose(m34);
+		m34.t = adhere6->getGlobalPosition();
+		adhere6->setGlobalPose(m34);
+		m34.t = adhere7->getGlobalPosition();
+		adhere7->setGlobalPose(m34);
+		m34.t = adhere8->getGlobalPosition();
+		adhere8->setGlobalPose(m34);
+		m34.t = adhere9->getGlobalPosition();
+		adhere9->setGlobalPose(m34);
+
+		cloth->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
+		cloth->putToSleep();
+		gCloths.push_back(objCloth);
+	}
+}
+
+void World::CreateHoneyComb()
+{
+	NxReal l = 3.0f;
+
+	NxActor* box1 = CreateBox(NxVec3(0,0,0), NxVec3(1.5,3,0.05), NxPi/6, 5);
+	NxActor* box2 = CreateBox(NxVec3(1.5 * RAD3,0,0), NxVec3(1.5,3,0.05), -NxPi/6, 5);
+	NxActor* box3 = CreateBox(NxVec3(-l*RAD3/4,0, 3*l/4), NxVec3(1.5,3,0.05), NxPi/2, 5);
+	NxActor* box4 = CreateBox(NxVec3(0,0,3*l/2), NxVec3(1.5,3,0.05), -NxPi/6, 5);
+	NxActor* box5 = CreateBox(NxVec3(1.5 * RAD3,0,3*l/2), NxVec3(1.5,3,0.05), NxPi/6, 5);
+	NxActor* box6 = CreateBox(NxVec3(3*l*RAD3/4,0,3*l/4), NxVec3(1.5,3,0.05), NxPi/2, 5);
+	box1->raiseBodyFlag(NX_BF_FROZEN_POS_Y);
+	box2->raiseBodyFlag(NX_BF_FROZEN_POS_Y);
+	box3->raiseBodyFlag(NX_BF_FROZEN_POS_Y);
+	box4->raiseBodyFlag(NX_BF_FROZEN_POS_Y);
+	box5->raiseBodyFlag(NX_BF_FROZEN_POS_Y);
+	box6->raiseBodyFlag(NX_BF_FROZEN_POS_Y);
+
+	gSelectedActor = box1;
+
+	CreateRevoluteJoint(box1, box2, NxVec3(l*RAD3/4, 0, -l/4), NxVec3(0,1,0), false);
+	CreateRevoluteJoint(box1, box3, NxVec3(-l*RAD3/4,0, l/4), NxVec3(0,1,0), false);
+	CreateRevoluteJoint(box3, box4, NxVec3(-l*RAD3/4,0, l*5/4), NxVec3(0,1,0), false);
+	CreateRevoluteJoint(box4, box5, NxVec3(l*RAD3/4,0, 7*l/4), NxVec3(0,1,0), false);
+	CreateRevoluteJoint(box5, box6, NxVec3(3*l*RAD3/4, 0, l*5/4), NxVec3(0,1,0), false);
+	CreateRevoluteJoint(box6, box2, NxVec3(3*l*RAD3/4, 0, l/4), NxVec3(0,1,0), false);
+
+	NxClothDesc clothDesc;
+	clothDesc.globalPose.t = NxVec3(0.5, 0.1, 7);
+
+	clothDesc.thickness = 0.01f;
+	clothDesc.pressure = 1.0f;
+	clothDesc.stretchingStiffness = 1.0f;
+	clothDesc.bendingStiffness = 1.0f;
+	clothDesc.friction = 0.1;
+	clothDesc.solverIterations = 1;
+	clothDesc.collisionResponseCoefficient = 0.2f;
+	clothDesc.globalPose.M.rotY(-NxPi/6);
+
+	clothDesc.density = 0.05f;
+	clothDesc.flags |= NX_CLF_PRESSURE | NX_CLF_DAMPING;
+	clothDesc.flags |= NX_CLF_BENDING | NX_CLF_COLLISION_TWOWAY | NX_CLF_VISUALIZATION | NX_CLF_TRIANGLE_COLLISION;
+
+	MyCloth* objCloth = new MyCloth(gScene, clothDesc, "data/newmesh.obj", 0.32);
+	NxCloth* cloth = objCloth->getNxCloth();
+
+	//cloth->attachToCollidingShapes(NX_CLOTH_ATTACHMENT_TWOWAY);
+	gSelectedCloth = cloth;
+	gCloths.push_back(objCloth);
 }
 
 void World::SetupPressureScene()
@@ -201,6 +442,7 @@ void World::SetupPressureScene()
 	printf("cloth\nmaxPos %f %f %f\nminPos %f %f %f\n\n",maxPos.x, maxPos.y, maxPos.z, minPos.x, minPos.y, minPos.z);
 	printf("cloth2\nmaxPos %f %f %f\nminPos %f %f %f\n",maxPos2.x, maxPos2.y, maxPos2.z, minPos2.x, minPos2.y, minPos2.z);
 	printf("cloth3\nmaxPos %f %f %f\nminPos %f %f %f\n",maxPos3.x, maxPos3.y, maxPos3.z, minPos3.x, minPos3.y, minPos3.z);
+	printf("width is %f  %f, height is %f\n",maxPos.x-minPos.x, maxPos.z-minPos.z, maxPos.y-minPos.y);
 
 	NxVec3 pos1(minPos.x, maxPos.y, (maxPos.z + minPos.z)/2);
 	NxVec3 pos2(minPos.x, minPos.y, (maxPos.z + minPos.z)/2);
@@ -260,6 +502,7 @@ void World::SetupPressureScene()
 
 	/*cloth->putToSleep();
 	cloth2->putToSleep();
+	cloth3->putToSleep();
 	adhere1->putToSleep();
 	adhere2->putToSleep();
 	adhere3->putToSleep();
@@ -282,9 +525,9 @@ void World::SetupPressureScene()
 void World::SetupMetalScene()
 {
 	// Create objects in scene
-	NxActor *box1 = CreateBox(NxVec3(0,0,10), NxVec3(20,10,0.5), 0);
-	NxActor *box2 = CreateBox(NxVec3(-20,0,0), NxVec3(0.5,10,10), 0);
-	NxActor *box3 = CreateBox(NxVec3( 20,0,0), NxVec3(0.5,10,10), 0); 
+	NxActor *box1 = CreateBox(NxVec3(0,0,10), NxVec3(20,10,0.5), 0,0);
+	NxActor *box2 = CreateBox(NxVec3(-20,0,0), NxVec3(0.5,10,10),0, 0);
+	NxActor *box3 = CreateBox(NxVec3( 20,0,0), NxVec3(0.5,10,10), 0,0); 
 
 	NxClothDesc clothDesc;
 

@@ -22,9 +22,9 @@ void testSphericalJoint(World* world)
 
 void testPrismaticJoints(World* world)
 {
-	NxActor* box1 = world->CreateBox(NxVec3(0,5,0), NxVec3(1,2,1), 10);
+	NxActor* box1 = world->CreateBox(NxVec3(0,5,0), NxVec3(1,2,1), 0,10);
 	box1->raiseBodyFlag(NX_BF_KINEMATIC);
-	NxActor* box2 = world->CreateBox(NxVec3(0,3,0), NxVec3(0.5,2,0.5), 10);
+	NxActor* box2 = world->CreateBox(NxVec3(0,3,0), NxVec3(0.5,2,0.5),0, 10);
 	box2->setLinearDamping(0.5);
 
 	NxVec3 globalAnchor = NxVec3(0,7,0);
@@ -82,7 +82,7 @@ void testPointOnLineJoint(World* world)
 
 void testPointInPlaneJoint(World* world)
 {
-	NxActor* box = world->CreateBox(NxVec3(0,6,0), NxVec3(5,0.5,5), 10);
+	NxActor* box = world->CreateBox(NxVec3(0,6,0), NxVec3(5,0.5,5), 0,10);
 	box->raiseBodyFlag(NX_BF_KINEMATIC);
 
 	NxActor* pyramid = world->CreateRegularPyramid(NxVec3(0,4,0), NxVec3(1,1,1), 10);

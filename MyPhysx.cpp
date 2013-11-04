@@ -261,13 +261,14 @@ void World::MyInitNx()
 	box1->raiseBodyFlag(NX_BF_FROZEN_POS_Z);
 	box1->setLinearDamping(0.5);*/
 
-	//NxActor* box1 = CreateBox(NxVec3(0,5,0), NxVec3(0.5,2,1),10);
+	//NxActor* box1 = CreateBox(NxVec3(0,5,0), NxVec3(0.5,2,1), 3);
 	//box1->raiseBodyFlag(NX_BF_KINEMATIC);
-	//NxActor* box2 = CreateBox(NxVec3(0,1,0), NxVec3(0.5,2,1), 10);
+	//NxActor* box2 = CreateBox(NxVec3(0,1,0), NxVec3(0.5,2,1), 3);
 	//box2->raiseBodyFlag(NX_BF_DISABLE_GRAVITY);
-	//
-	NxVec3 globalAnchor = NxVec3(0.5, 5, -1);
-	NxVec3 globalAxis = NxVec3(0,1,0);
+	//gSelectedActor = box1;
+	
+	//NxVec3 globalAnchor = NxVec3(0.5, 5, -1);
+	//NxVec3 globalAxis = NxVec3(0,1,0);
 
 	//fixedJoint = CreateFixedJoint(box1, box2, globalAnchor, globalAxis);
 	//revJoint = CreateRevoluteJoint(box1, box2, globalAnchor, globalAxis, false);
@@ -287,7 +288,8 @@ void World::MyInitNx()
 	//SetupCurtainScene();
 	//SetupFlagScene();
 	//SetupPressureScene();
-	CreateSoftComb();
+	//CreateSoftComb();
+	CreateHoneyComb();
 	//SetupMetalScene();
 
 	//fluid = CreateFluid(NxVec3(0,3,0), 15, 0.1, gScene);

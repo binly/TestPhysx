@@ -69,7 +69,7 @@ public:
 	static NxActor* MyCreateRay();
 
 	static void MyCreateStack();
-	static NxActor* CreateBox(const NxVec3& pos, const NxVec3& boxDim, const NxReal density);
+	static NxActor* CreateBox(const NxVec3& pos, const NxVec3& boxDim, const NxReal angleY, const NxReal density);
 	static NxActor* CreateSphere(const NxVec3& pos, const NxReal radius, const NxReal density);
 	static NxActor* CreateDownWedge(const NxVec3& pos, const NxVec3& boxDim, const NxReal density);
 	static NxActor* CreateRegularPyramid(const NxVec3& pos, const NxVec3& boxDim, const NxReal density);
@@ -112,6 +112,7 @@ public:
 	static void SetupFlagScene();
 	static void SetupPressureScene();
 	static void CreateSoftComb();
+	static void CreateHoneyComb();
 	static void SetupMetalScene();
 	static void CreateMetalCloth(const NxVec3 &position, int mode, NxClothDesc &clothDesc, char *meshName);
 
